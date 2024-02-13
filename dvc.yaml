@@ -5,3 +5,14 @@ metrics:
 plots:
 - dvclive/plots/metrics:
     x: step
+stages:
+  make_dataset:
+    cmd: python ./src/make_dataset.py 
+    deps:
+    - ./data/raw/creditcard.csv
+    - ./src/make_dataset.py
+    params:
+    - make_dataset.test_split
+    - make_dataset.seed
+    outs:
+    - ./data/processed/

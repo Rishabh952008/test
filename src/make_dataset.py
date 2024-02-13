@@ -23,6 +23,7 @@ def unzip_data():
 def load_data(data_path):
     # Load your dataset from a given path
     df = pd.read_csv(data_path)
+    return df
 
 def split_data(df,test_split, seed):
     # Split the dataset into train and test sets
@@ -38,7 +39,9 @@ def save_data(train,test, output_path):
 def main():
     
     curr_dir = Path(__file__)
-    home_dir = curr_dir.parent.parent.parent
+    print(curr_dir)
+    home_dir = Path.cwd()
+    print(home_dir)
     if Path("data/kaggle_data").exists:
        download_data()
        unzip_data()
@@ -46,10 +49,8 @@ def main():
        print("data already downloaded")
     params_file = home_dir.as_posix() + '/params.yaml'
     params = yaml.safe_load(open(params_file))['make_dataset']
-    data_path = home_dir.as_posix()+'data/raw/creditcard.csv'
+    data_path = home_dir.as_posix()+'/data/raw/creditcard.csv'
     
-    input_file = sys.argv[1]
-    data_path = home_dir.as_posix() + input_file
     output_path = home_dir.as_posix() + '/data/processed'
     
     data = load_data(data_path=data_path)
