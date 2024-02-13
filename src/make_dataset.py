@@ -1,6 +1,10 @@
 from pathlib import Path
 import subprocess
 import zipfile
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import yaml
+import sys
 
 api = "kaggle datasets download -d mlg-ulb/creditcardfraud"
 curr_path = Path.cwd()
@@ -16,9 +20,42 @@ def unzip_data():
     with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
        zip_ref.extractall(Path("data/raw"))
     
+def load_data(data_path):
+    # Load your dataset from a given path
+    df = pd.read_csv(data_path)
 
-if Path("data/kaggle_data").exists:
-    download_data()
-    unzip_data()
-else:
-    print("data already downloaded")
+def split_data(df,test_split, seed):
+    # Split the dataset into train and test sets
+    train, test = train_test_split(df,test_size=test_split,random_state=seed)
+    return train, test
+
+def save_data(train,test, output_path):
+    # Save the split datasets to the specified output
+    Path(output_path).mkdir(parents=True,exist_ok=True)
+    train.to_csv(output_path + '/train.csv', index=False)
+    test.to_csv(output_path + '/test.csv', index=False)
+    
+def main():
+    
+    curr_dir = Path(__file__)
+    home_dir = curr_dir.parent.parent.parent
+    if Path("data/kaggle_data").exists:
+       download_data()
+       unzip_data()
+    else:
+       print("data already downloaded")
+    params_file = home_dir.as_posix() + '/params.yaml'
+    params = yaml.safe_load(open(params_file))['make_dataset']
+    data_path = home_dir.as_posix()+'data/raw/creditcard.csv'
+    
+    input_file = sys.argv[1]
+    data_path = home_dir.as_posix() + input_file
+    output_path = home_dir.as_posix() + '/data/processed'
+    
+    data = load_data(data_path=data_path)
+    train_data, test_data = split_data(data,params['test_split'], params['seed'])
+    save_data(train_data, test_data, output_path)
+
+if __name__ == "__main__":
+    main()
+
